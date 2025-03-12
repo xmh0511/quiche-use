@@ -1,0 +1,8 @@
+[package]
+name = "quiche-test"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+quiche = "0.23.4"
+ring = "0.17.14"
