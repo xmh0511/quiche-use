@@ -22,9 +22,9 @@ pub fn configure_quiche() -> Result<quiche::Config, Box<dyn std::error::Error>> 
 
     config.load_cert_chain_from_pem_file("cert.pem")?;
     config.load_priv_key_from_pem_file("key.pem")?;
-    
+
     // 设置 QUIC 连接的参数
-    config.set_application_protos(&[b"\x05hello"])?;
+    config.set_application_protos(&[b"hello"])?;
     config.set_max_idle_timeout(5000);
     config.set_max_recv_udp_payload_size(MAX_DATAGRAM_SIZE);
     config.set_max_send_udp_payload_size(MAX_DATAGRAM_SIZE);
@@ -33,9 +33,9 @@ pub fn configure_quiche() -> Result<quiche::Config, Box<dyn std::error::Error>> 
     config.set_initial_max_stream_data_bidi_remote(MAX_STREAM_DATA);
     config.set_initial_max_streams_bidi(MAX_STREAMS_BIDI);
     config.set_disable_active_migration(true);
-    
+
     // 使用 CUBIC 拥塞控制算法
     config.set_cc_algorithm(quiche::CongestionControlAlgorithm::CUBIC);
-    
+
     Ok(config)
 }

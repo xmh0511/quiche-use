@@ -24,6 +24,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // 创建 QUIC 配置
     let mut config = common::configure_quiche()?;
+    config.load_verify_locations_from_file("rootCA.pem")?;
 
     // 生成随机源连接 ID
     let rng = SystemRandom::new();
@@ -32,7 +33,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let connect_id = ConnectionId::from_ref(&scid);
 
     // 创建 QUIC 连接
-    let mut conn = quiche::connect(None, &connect_id,local_addr, server_addr, &mut config)?;
+    let mut conn = quiche::connect(None, &connect_id, local_addr, server_addr, &mut config)?;
 
     println!("连接到 {}", server_addr);
 
@@ -46,7 +47,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         // 发送传出数据包
         loop {
             match conn.send(&mut out) {
-                Ok((len,_)) => {
+                Ok((len, _)) => {
                     if let Err(e) = socket.send_to(&out[..len], server_addr) {
                         if e.kind() != io::ErrorKind::WouldBlock {
                             eprintln!("发送错误: {:?}", e);
@@ -87,9 +88,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             Ok((len, from)) => {
                 println!("从 {} 接收到 {} 字节", from, len);
 
-                let recv_info = RecvInfo{from,to:local_addr};
+                let recv_info = RecvInfo {
+                    from,
+                    to: local_addr,
+                };
                 // 处理数据包
-                match conn.recv(&mut buf[..len],recv_info) {
+                match conn.recv(&mut buf[..len], recv_info) {
                     Ok(_) => {}
                     Err(quiche::Error::Done) => {}
                     Err(e) => {

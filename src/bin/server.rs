@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::io;
 use std::net::UdpSocket;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 use quiche::{ConnectionId, RecvInfo};
 use ring::rand::*;
@@ -17,6 +17,7 @@ mod common {
     pub const MAX_STREAMS_BIDI: u64 = 100;
 
     // 解析地址字符串到套接字地址
+    #[allow(dead_code)]
     pub fn resolve_address(address: &str) -> Result<SocketAddr, Box<dyn std::error::Error>> {
         let addr = address
             .to_socket_addrs()?
@@ -33,7 +34,7 @@ mod common {
         config.load_priv_key_from_pem_file("key.pem")?;
 
         // 设置 QUIC 连接的参数
-        config.set_application_protos(&[b"\x05hello"])?;
+        config.set_application_protos(&[b"hello"])?;
         config.set_max_idle_timeout(5000);
         config.set_max_recv_udp_payload_size(MAX_DATAGRAM_SIZE);
         config.set_max_send_udp_payload_size(MAX_DATAGRAM_SIZE);
@@ -63,12 +64,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut config = common::configure_quiche()?;
 
     // 配置为服务器
-    config.verify_peer(false);
+    //config.verify_peer(false);
 
     // 生成随机源连接 ID
     let rng = SystemRandom::new();
-    let mut scid = [0; quiche::MAX_CONN_ID_LEN];
-    rng.fill(&mut scid).unwrap();
+    // let mut scid = [0; quiche::MAX_CONN_ID_LEN];
+    // rng.fill(&mut scid).unwrap();
 
     // 创建连接映射
     let mut connections: HashMap<Vec<u8>, quiche::Connection> = HashMap::new();
@@ -201,7 +202,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 // 没有数据可用，处理超时和清理操作
 
                 // 处理所有连接的超时
-                let now = Instant::now();
+                //let now = Instant::now();
                 for (_, conn) in connections.iter_mut() {
                     if let Some(timeout) = conn.timeout() {
                         if timeout.as_millis() == 0 {
